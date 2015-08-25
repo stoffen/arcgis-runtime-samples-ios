@@ -422,6 +422,23 @@ class ViewController:UIViewController, AGSLayerDelegate, AGSMapViewTouchDelegate
         //
     }
     
+    
+    func saveLoop(feature: AGSGDBFeature) {
+        
+        println("save loop \(feature)")
+        
+        let error: NSErrorPointer = nil
+        
+        feature.table.saveFeature(feature, error: error)
+        
+        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(0.01 * Double(NSEC_PER_SEC)))
+        
+        dispatch_after(delayTime, dispatch_get_main_queue()) {
+            self.saveLoop(feature)
+        }
+        
+        
+    }
     //MARK: - FeatureTemplatePickerViewControllerDelegate methods
     
     func featureTemplatePickerViewController(controller: FeatureTemplatePickerViewController, didSelectFeatureTemplate template: AGSFeatureTemplate, forLayer layer: AGSGDBFeatureSourceInfo) {
@@ -431,6 +448,8 @@ class ViewController:UIViewController, AGSLayerDelegate, AGSMapViewTouchDelegate
             //Create new feature with template
             let featureTable = layer as! AGSGDBFeatureTable
             let feature = featureTable.featureWithTemplate(template)
+            
+            self.saveLoop(feature)
             
             //Create popup for new feature, commence edit mode
             let popupInfo = AGSPopupInfo(forGDBFeatureTable: featureTable)
